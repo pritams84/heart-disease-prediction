@@ -1,9 +1,11 @@
 from flask import Flask, request, jsonify, render_template_string
+from flask_cors import CORS
 import joblib
 import numpy as np
 import pandas as pd
 
 app = Flask(__name__)
+CORS(app)
 
 # Load the trained model and feature list
 try:

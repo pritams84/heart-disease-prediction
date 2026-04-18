@@ -1,5 +1,5 @@
 __pycache__/
 *.pyc
 .env
-model.pkl
-features.pkl
+# model.pkl
+# features.pkl
