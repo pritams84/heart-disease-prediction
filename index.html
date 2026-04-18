@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Disease Risk Predictor | AI Medical Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a2a6c 0%, #b21f1f 50%, #fdbb2d 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            opacity: 0.8;
+            font-size: 1.1em;
+            font-weight: 300;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-size: 0.95em;
+        }
+
+        .input-group input, .input-group select {
+            padding: 12px;
+            border: 1px solid #ccd1d1;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s;
+            background: #fdfefe;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
+        }
+
+        .input-group .hint {
+            font-size: 0.8em;
+            color: #7f8c8d;
+            margin-top: 6px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 16px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #c0392b;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(231, 76, 60, 0.3);
+        }
+
+        .btn-secondary {
+            background: #ecf0f1;
+            color: #7f8c8d;
+        }
+
+        .btn-secondary:hover {
+            background: #bdc3c7;
+            color: #2c3e50;
+        }
+
+        .result-card {
+            margin-top: 40px;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            animation: fadeIn 0.6s ease-out;
+            border-left: 8px solid transparent;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-high-risk {
+            background: #fdf2f2;
+            color: #9b1c1c;
+            border-left-color: #f05252;
+            box-shadow: 0 5px 15px rgba(240, 82, 82, 0.1);
+        }
+
+        .result-low-risk {
+            background: #f3faf7;
+            color: #03543f;
+            border-left-color: #0e9f6e;
+            box-shadow: 0 5px 15px rgba(14, 159, 110, 0.1);
+        }
+
+        .result-card h2 {
+            font-size: 2.2em;
+            margin-bottom: 15px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #e74c3c;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 25px;
+            text-align: center;
+            color: #95a5a6;
+            font-size: 0.85em;
+            border-top: 1px solid #eee;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .container { margin: 10px; }
+            .header h1 { font-size: 1.8em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Heart Disease Risk Predictor</h1>
+            <p>Advanced AI Diagnostic Support System</p>
+        </div>
+
+        <div class="form-container">
+            <form id="predictionForm">
+                <div class="form-grid">
+                    <div class="input-group">
+                        <label>Age</label>
+                        <input type="number" id="Age" name="Age" value="55" required>
+                        <div class="hint">Patient's age in years</div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Sex</label>
+                        <select id="Sex" name="Sex" required>
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Chest Pain Type</label>
+                        <select id="ChestPainType" name="ChestPainType" required>
+                            <option value="ATA">ATA (Atypical Angina)</option>
+                            <option value="NAP">NAP (Non-Anginal Pain)</option>
+                            <option value="ASY">ASY (Asymptomatic)</option>
+                            <option value="TA">TA (Typical Angina)</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Resting Blood Pressure</label>
+                        <input type="number" id="RestingBP" name="RestingBP" value="130" required>
+                        <div class="hint">mm Hg</div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Cholesterol</label>
+                        <input type="number" id="Cholesterol" name="Cholesterol" value="240" required>
+                        <div class="hint">mg/dl</div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Fasting Blood Sugar > 120</label>
+                        <select id="FastingBS" name="FastingBS" required>
+                            <option value="0">No</option>
+                            <option value="1">Yes</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Resting ECG</label>
+                        <select id="RestingECG" name="RestingECG" required>
+                            <option value="Normal">Normal</option>
+                            <option value="ST">ST Abnormality</option>
+                            <option value="LVH">Left Ventricular Hypertrophy</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Max Heart Rate</label>
+                        <input type="number" id="MaxHR" name="MaxHR" value="150" required>
+                        <div class="hint">Beats per minute</div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Exercise Induced Angina</label>
+                        <select id="ExerciseAngina" name="ExerciseAngina" required>
+                            <option value="N">No</option>
+                            <option value="Y">Yes</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Oldpeak</label>
+                        <input type="number" id="Oldpeak" name="Oldpeak" step="0.1" value="1.5" required>
+                        <div class="hint">ST depression</div>
+                    </div>
+
+                    <div class="input-group">
+                        <label>ST Slope</label>
+                        <select id="ST_Slope" name="ST_Slope" required>
+                            <option value="Up">Up</option>
+                            <option value="Flat">Flat</option>
+                            <option value="Down">Down</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">Predict Heart Risk</button>
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">Reset Form</button>
+                </div>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing medical signatures...</p>
+            </div>
+
+            <div id="result"></div>
+        </div>
+
+        <div class="footer">
+            <p><strong>Disclaimer:</strong> This is an AI-powered educational tool. Results should not be used as clinical diagnosis.</p>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('predictionForm');
+        const loadingDiv = document.getElementById('loading');
+        const resultDiv = document.getElementById('result');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            loadingDiv.classList.add('active');
+            resultDiv.innerHTML = '';
+            
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Numeric conversions
+            ['Age', 'RestingBP', 'Cholesterol', 'FastingBS', 'MaxHR'].forEach(key => {
+                data[key] = parseInt(data[key]);
+            });
+            data.Oldpeak = parseFloat(data.Oldpeak);
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                displayResult(result);
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="result-card" style="color:red">Error connecting to server.</div>`;
+            } finally {
+                loadingDiv.classList.remove('active');
+            }
+        });
+
+        function displayResult(data) {
+            const isHigh = data.prediction === 'High Risk';
+            const riskClass = isHigh ? 'result-high-risk' : 'result-low-risk';
+            
+            resultDiv.innerHTML = `
+                <div class="result-card ${riskClass}">
+                    <h2>${isHigh ? '⚠️' : '✅'} Predicted: ${data.prediction}</h2>
+                    <p>Our AI model has analyzed the input parameters and determined a ${isHigh ? 'significant' : 'minimal'} risk of heart disease.</p>
+                    <div style="margin-top:20px; font-weight:bold">
+                        Recommendation: ${isHigh ? 'Consult a cardiologist for a thorough examination.' : 'Keep up the healthy habits and schedule routine checkups.'}
+                    </div>
+                </div>
+            `;
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+
+        function resetForm() {
+            form.reset();
+            resultDiv.innerHTML = '';
+        }
+    </script>
+</body>
+</html>
